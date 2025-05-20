@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="mendix.reactplanner.ReactPlanner" pluginWidget="true" needsEntityContext="true" offlineCapable="true" supportedPlatform="Web"
+    xmlns="http://www.mendix.com/widget/1.0/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>React Planner</name>
+    <description>Planner widget for React apps</description>
+    <icon/>
+    <properties>
+        <propertyGroup caption="General">
+            <propertyGroup caption="Events">
+                <property key="eventData" type="datasource" isList="true" required="true">
+                    <caption>Events source</caption>
+                    <description />
+                </property>
+                <property key="eventIdAttr" type="attribute" dataSource="eventData" required="true">
+                    <caption>Event id</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                        <attributeType name="AutoNumber"/>
+                        <attributeType name="Integer"/>
+                        <attributeType name="Long"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventStartAttr" type="attribute" dataSource="eventData" required="true">
+                    <caption>Event start</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="DateTime"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventEndAttr" type="attribute" dataSource="eventData" required="true">
+                    <caption>Event end</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="DateTime"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventResourceAttr" type="attribute" dataSource="eventData" required="true">
+                    <caption>Resource id</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                        <attributeType name="AutoNumber"/>
+                        <attributeType name="Integer"/>
+                        <attributeType name="Long"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventTitleAttr" type="attribute" dataSource="eventData" required="true">
+                    <caption>Event title</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventColorAttr" type="attribute" dataSource="eventData" required="false">
+                    <caption>Color</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                    </attributeTypes>
+                </property>
+                <property key="eventSelection" type="selection" dataSource="eventData" onChange="onEventSelection">
+                    <caption>Event selection</caption>
+                    <description />
+                    <selectionTypes>
+                        <selectionType name="Single" />
+                    </selectionTypes>
+                </property>
+                <property key="onEventSelection" type="action">
+                    <caption>On event click</caption>
+                    <description>Action to be performed when an event is clicked</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Resources">
+                <property key="resourceData" type="datasource" isList="true" required="true">
+                    <caption>Resources source</caption>
+                    <description />
+                </property>
+                <property key="resourceIdAttr" type="attribute" dataSource="resourceData" required="true">
+                    <caption>Resource id</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                        <attributeType name="AutoNumber"/>
+                        <attributeType name="Integer"/>
+                        <attributeType name="Long"/>
+                    </attributeTypes>
+                </property>
+                <property key="resourceNameAttr" type="attribute" dataSource="resourceData" required="true">
+                    <caption>Resource name</caption>
+                    <description></description>
+                    <attributeTypes>
+                        <attributeType name="String"/>
+                    </attributeTypes>
+                </property>
+            </propertyGroup>
+        </propertyGroup>
+    </properties>
+</widget>
