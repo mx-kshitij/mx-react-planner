@@ -120,7 +120,7 @@ export function ReactPlanner({
         setUpdateFlag(f => f + 1);
     }, [resourceData, schedulerData, resourceIdAttr, resourceNameAttr]);
 
-    // Navigation handlers: mutate schedulerData and force re-render
+    
     const prevClick = () => {
         schedulerData.prev();
         schedulerData.setEvents(events);
@@ -147,7 +147,6 @@ export function ReactPlanner({
         eventSelection.setSelection(item);
     }
     
-    // --- CONDITIONAL RENDERING HERE, after all hooks ---
     if (!eventData || eventData.status !== ValueStatus.Available
         || !resourceData || resourceData.status !== ValueStatus.Available) {
         return <div />
@@ -155,6 +154,7 @@ export function ReactPlanner({
 
     schedulerData.setEvents(events);
     schedulerData.setResources(resources);
+    console.debug(`Update flag: ${updateFlag}`);
 
     return (
         <DndProvider backend={HTML5Backend}>

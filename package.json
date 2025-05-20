@@ -26,13 +26,11 @@
   },
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.15.0",
-    "@types/big.js": "^6.0.2",
-    "@types/react-big-scheduler": "^0.2.7"
+    "@types/big.js": "^6.0.2"
   },
   "dependencies": {
     "classnames": "^2.2.6",
-    "react-big-schedule": "^4.5.1",
-    "react-big-scheduler": "^0.2.7"
+    "react-big-schedule": "^4.5.1"
   },
   "resolutions": {
     "react": "^18.2.0",

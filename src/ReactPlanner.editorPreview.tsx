@@ -1,9 +1,8 @@
 import { ReactElement, createElement } from "react";
-import { HelloWorldSample } from "./components/HelloWorldSample";
 import { ReactPlannerPreviewProps } from "../typings/ReactPlannerProps";
 
-export function preview({ sampleText }: ReactPlannerPreviewProps): ReactElement {
-    return <HelloWorldSample sampleText={sampleText} />;
+export function preview({ }: ReactPlannerPreviewProps): ReactElement {
+    return <div/>;
 }
 
 export function getPreviewCss(): string {
