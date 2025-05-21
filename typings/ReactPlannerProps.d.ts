@@ -3,8 +3,8 @@
  * WARNING: All changes made to this file will be overwritten
  * @author Mendix Widgets Framework Team
  */
-import { CSSProperties } from "react";
-import { ListValue, ListAttributeValue, SelectionSingleValue } from "mendix";
+import { ComponentType, CSSProperties, ReactNode } from "react";
+import { ActionValue, EditableValue, ListValue, ListAttributeValue, ListWidgetValue, SelectionSingleValue } from "mendix";
 import { Big } from "big.js";
 
 export interface ReactPlannerContainerProps {
@@ -20,9 +20,15 @@ export interface ReactPlannerContainerProps {
     eventTitleAttr: ListAttributeValue<string>;
     eventColorAttr?: ListAttributeValue<string>;
     eventSelection: SelectionSingleValue;
+    onEventSelection?: ActionValue;
+    popoverContent?: ListWidgetValue;
     resourceData: ListValue;
     resourceIdAttr: ListAttributeValue<string | Big>;
     resourceNameAttr: ListAttributeValue<string>;
+    newEventResourceId: EditableValue<string>;
+    newEventStart: EditableValue<Date>;
+    newEventEnd: EditableValue<Date>;
+    newEventAction?: ActionValue;
 }
 
 export interface ReactPlannerPreviewProps {
@@ -44,7 +50,12 @@ export interface ReactPlannerPreviewProps {
     eventColorAttr: string;
     eventSelection: "Single";
     onEventSelection: {} | null;
+    popoverContent: { widgetCount: number; renderer: ComponentType<{ children: ReactNode; caption?: string }> };
     resourceData: {} | { caption: string } | { type: string } | null;
     resourceIdAttr: string;
     resourceNameAttr: string;
+    newEventResourceId: string;
+    newEventStart: string;
+    newEventEnd: string;
+    newEventAction: {} | null;
 }

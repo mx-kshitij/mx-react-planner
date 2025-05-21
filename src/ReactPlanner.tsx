@@ -62,23 +62,12 @@ const eventList = [
 
 interface CustomEventItem extends EventItem {
     click: () => void;
+    item: ObjectItem;
 }
 
 const defaultEventColor = "#ccc"
 
-export function ReactPlanner({
-    eventData,
-    eventIdAttr,
-    eventStartAttr,
-    eventEndAttr,
-    eventResourceAttr,
-    eventTitleAttr,
-    eventColorAttr,
-    eventSelection,
-    resourceData,
-    resourceIdAttr,
-    resourceNameAttr
-}: ReactPlannerContainerProps): ReactElement {
+export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
     const [events, setEvents] = useState<EventItem[]>(eventList);
     const [resources, setResources] = useState<Resource[]>(resourceList);
     const [updateFlag, setUpdateFlag] = useState(0);
@@ -90,37 +79,39 @@ export function ReactPlanner({
 
     schedulerData.setSchedulerLocale('en');
     schedulerData.setCalendarPopoverLocale('en');
+    schedulerData.config.schedulerWidth = '95%';
 
     useEffect(() => {
-        const newEventList : CustomEventItem[] = [];
-        eventData?.items?.forEach(item => {
+        const newEventList: CustomEventItem[] = [];
+        props.eventData?.items?.forEach(item => {
             newEventList.push({
-                id: eventIdAttr.get(item).value?.toString()!,
-                start: eventStartAttr.get(item).value?.toString()!,
-                end: eventEndAttr.get(item).value?.toString()!,
-                resourceId: eventResourceAttr.get(item).value?.toString()!,
-                title: eventTitleAttr.get(item).value?.toString()!,
-                bgColor: eventColorAttr ? eventColorAttr.get(item).value : defaultEventColor,
-                click: () => onItemClick(item)
+                id: props.eventIdAttr.get(item).value?.toString()!,
+                start: props.eventStartAttr.get(item).value?.toString()!,
+                end: props.eventEndAttr.get(item).value?.toString()!,
+                resourceId: props.eventResourceAttr.get(item).value?.toString()!,
+                title: props.eventTitleAttr.get(item).value?.toString()!,
+                bgColor: props.eventColorAttr ? props.eventColorAttr.get(item).value : defaultEventColor,
+                click: () => onItemClick(item),
+                item: item
             });
         });
         setEvents(newEventList);
-    }, [eventData]);
+    }, [props.eventData]);
 
     useEffect(() => {
         const newResourceList: Resource[] = [];
-        resourceData?.items?.forEach(item => {
+        props.resourceData?.items?.forEach(item => {
             newResourceList.push({
-                id: resourceIdAttr.get(item).value?.toString()!,
-                name: resourceNameAttr.get(item).value?.toString()!
+                id: props.resourceIdAttr.get(item).value?.toString()!,
+                name: props.resourceNameAttr.get(item).value?.toString()!
             });
         });
         setResources(newResourceList);
         schedulerData.setResources(newResourceList);
         setUpdateFlag(f => f + 1);
-    }, [resourceData, schedulerData, resourceIdAttr, resourceNameAttr]);
+    }, [props.resourceData, schedulerData, props.resourceIdAttr, props.resourceNameAttr]);
 
-    
+
     const prevClick = () => {
         schedulerData.prev();
         schedulerData.setEvents(events);
@@ -144,11 +135,21 @@ export function ReactPlanner({
     };
 
     const onItemClick = (item: ObjectItem) => {
-        eventSelection.setSelection(item);
+        props.eventSelection.setSelection(item);
+        if (props.onEventSelection)
+            props.onEventSelection?.execute();
     }
-    
-    if (!eventData || eventData.status !== ValueStatus.Available
-        || !resourceData || resourceData.status !== ValueStatus.Available) {
+
+    const onNewEvent = (resourceId: string, start: string, end: string) => {
+        props.newEventResourceId.setValue(resourceId);
+        props.newEventStart.setValue(new Date(start));
+        props.newEventEnd.setValue(new Date(end));
+        if (props.newEventAction)
+            props.newEventAction.execute()
+    }
+
+    if (!props.eventData || props.eventData.status !== ValueStatus.Available
+        || !props.resourceData || props.resourceData.status !== ValueStatus.Available) {
         return <div />
     }
 
@@ -157,17 +158,28 @@ export function ReactPlanner({
     console.debug(`Update flag: ${updateFlag}`);
 
     return (
-        <DndProvider backend={HTML5Backend}>
-            <Scheduler
-                schedulerData={schedulerData}
-                prevClick={prevClick}
-                nextClick={nextClick}
-                onSelectDate={onSelectDate}
-                onViewChange={onViewChange}
-                eventItemClick={(_schedulerData: SchedulerData<EventItem>, event: CustomEventItem) => {
-                    event.click();
-                }}
-            />
-        </DndProvider>
+        <div className="react-planner">
+            <DndProvider backend={HTML5Backend}>
+                <Scheduler
+                    schedulerData={schedulerData}
+                    // parentRef={parentRef}
+                    prevClick={prevClick}
+                    nextClick={nextClick}
+                    onSelectDate={onSelectDate}
+                    onViewChange={onViewChange}
+                    eventItemClick={(_schedulerData: SchedulerData<EventItem>, event: CustomEventItem) => {
+                        event.click();
+                    }}
+                    newEvent={(_, slotId, __, start, end) => { onNewEvent(slotId, start, end) }}
+                    eventItemPopoverTemplateResolver={(_schedulerData: SchedulerData, event: CustomEventItem) => {
+                        return (<div>{props.popoverContent?.get(event.item)}</div>);
+                    }}
+                    toggleExpandFunc={(_schedulerData: SchedulerData<EventItem>, slotId: string) => {
+                        schedulerData.toggleExpandStatus(slotId);
+                        setUpdateFlag(f => f + 1);
+                    }}
+                />
+            </DndProvider>
+        </div>
     );
 }

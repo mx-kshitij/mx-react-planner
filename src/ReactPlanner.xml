@@ -60,7 +60,7 @@
                         <attributeType name="String"/>
                     </attributeTypes>
                 </property>
-                <property key="eventSelection" type="selection" dataSource="eventData" onChange="onEventSelection">
+                <property key="eventSelection" type="selection" dataSource="eventData">
                     <caption>Event selection</caption>
                     <description />
                     <selectionTypes>
@@ -70,6 +70,10 @@
                 <property key="onEventSelection" type="action">
                     <caption>On event click</caption>
                     <description>Action to be performed when an event is clicked</description>
+                </property>
+                <property key="popoverContent" type="widgets" required="false" dataSource="eventData">
+                    <caption>Pop over template</caption>
+                    <description></description>
                 </property>
             </propertyGroup>
             <propertyGroup caption="Resources">
@@ -95,6 +99,33 @@
                     </attributeTypes>
                 </property>
             </propertyGroup>
+        </propertyGroup>
+        <propertyGroup caption="New Event">
+            <property key="newEventResourceId" type="attribute" required="true">
+                <caption>Resource id</caption>
+                <description></description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="newEventStart" type="attribute" required="true">
+                <caption>Event Start</caption>
+                <description></description>
+                <attributeTypes>
+                    <attributeType name="DateTime"/>
+                </attributeTypes>
+            </property>
+            <property key="newEventEnd" type="attribute" required="true">
+                <caption>Event End</caption>
+                <description></description>
+                <attributeTypes>
+                    <attributeType name="DateTime"/>
+                </attributeTypes>
+            </property>
+            <property key="newEventAction" type="action">
+                <caption>New event</caption>
+                <description>Action to be performed when a new event created</description>
+            </property>
         </propertyGroup>
     </properties>
 </widget>
