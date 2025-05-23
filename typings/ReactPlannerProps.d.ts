@@ -7,6 +7,8 @@ import { ComponentType, CSSProperties, ReactNode } from "react";
 import { ActionValue, EditableValue, ListValue, ListAttributeValue, ListWidgetValue, SelectionSingleValue } from "mendix";
 import { Big } from "big.js";
 
+export type DefaultViewEnum = "Day" | "Week" | "Month" | "Quarter" | "Year";
+
 export interface ReactPlannerContainerProps {
     name: string;
     class: string;
@@ -29,6 +31,15 @@ export interface ReactPlannerContainerProps {
     newEventStart: EditableValue<Date>;
     newEventEnd: EditableValue<Date>;
     newEventAction?: ActionValue;
+    showWeekends: boolean;
+    viewStart?: EditableValue<Date>;
+    viewEnd?: EditableValue<Date>;
+    showDay: boolean;
+    showWeek: boolean;
+    showMonth: boolean;
+    showQuarter: boolean;
+    showYear: boolean;
+    defaultView: DefaultViewEnum;
 }
 
 export interface ReactPlannerPreviewProps {
@@ -58,4 +69,13 @@ export interface ReactPlannerPreviewProps {
     newEventStart: string;
     newEventEnd: string;
     newEventAction: {} | null;
+    showWeekends: boolean;
+    viewStart: string;
+    viewEnd: string;
+    showDay: boolean;
+    showWeek: boolean;
+    showMonth: boolean;
+    showQuarter: boolean;
+    showYear: boolean;
+    defaultView: DefaultViewEnum;
 }

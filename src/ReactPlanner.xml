@@ -127,5 +127,58 @@
                 <description>Action to be performed when a new event created</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Configuration">
+            <property key="showWeekends" type="boolean" defaultValue="false">
+                <caption>Show weekends</caption>
+                <description>Show weekends in the planner</description>
+            </property>
+            <property key="viewStart" type="attribute" required="false">
+                <caption>View Start</caption>
+                <description></description>
+                <attributeTypes>
+                    <attributeType name="DateTime"/>
+                </attributeTypes>
+            </property>
+            <property key="viewEnd" type="attribute" required="false">
+                <caption>View End</caption>
+                <description></description>
+                <attributeTypes>
+                    <attributeType name="DateTime"/>
+                </attributeTypes>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Views">
+            <property key="showDay" type="boolean" defaultValue="true">
+                <caption>Show Day</caption>
+                <description></description>
+            </property>
+            <property key="showWeek" type="boolean" defaultValue="true">
+                <caption>Show Week</caption>
+                <description></description>
+            </property>
+            <property key="showMonth" type="boolean" defaultValue="true">
+                <caption>Show Month</caption>
+                <description></description>
+            </property>
+            <property key="showQuarter" type="boolean" defaultValue="true">
+                <caption>Show Quarter</caption>
+                <description></description>
+            </property>
+            <property key="showYear" type="boolean" defaultValue="true">
+                <caption>Show Year</caption>
+                <description></description>
+            </property>
+            <property key="defaultView" type="enumeration" defaultValue="Week">
+                <caption>Default view</caption>
+                <description></description>
+                <enumerationValues>
+                    <enumerationValue key="Day">Day</enumerationValue>
+                    <enumerationValue key="Week">Week</enumerationValue>
+                    <enumerationValue key="Month">Month</enumerationValue>
+                    <enumerationValue key="Quarter">Quarter</enumerationValue>
+                    <enumerationValue key="Year">Year</enumerationValue>
+                </enumerationValues>
+            </property>
+        </propertyGroup>
     </properties>
 </widget>

@@ -67,19 +67,131 @@ interface CustomEventItem extends EventItem {
 
 const defaultEventColor = "#ccc"
 
+function waitForSchedulerWidth(cb: () => void) {
+    function check() {
+        const el = document.getElementById('RBS-Scheduler-root');
+        if (el && el.offsetWidth > 0) {
+            cb();
+        } else {
+            requestAnimationFrame(check);
+        }
+    }
+    check();
+}
+
+
 export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
+    if (props && props.viewStart && props.viewEnd && props.viewStart.status !== ValueStatus.Available && props.viewEnd.status !== ValueStatus.Available) {
+        return <div />;
+    }
+
     const [events, setEvents] = useState<EventItem[]>(eventList);
     const [resources, setResources] = useState<Resource[]>(resourceList);
     const [updateFlag, setUpdateFlag] = useState(0);
+    const plannerRef = useRef<HTMLDivElement>(null);
+    const [plannerWidth, setPlannerWidth] = useState<number>(0);
+    const resizeTimeout = useRef<NodeJS.Timeout | null>(null);
+
+    function getViews(): any[] {
+        const views = [];
+        if (props.showDay)
+            views.push({ viewName: 'Day', viewType: ViewType.Day });
+        if (props.showWeek)
+            views.push({ viewName: 'Week', viewType: ViewType.Week });
+        if (props.showMonth)
+            views.push({ viewName: 'Month', viewType: ViewType.Month });
+        if (props.showYear)
+            views.push({ viewName: 'Year', viewType: ViewType.Year });
+        return views;
+    }
+
+    function getDefaultView(){
+        if(props.defaultView === "Day")
+            return ViewType.Day
+        else if(props.defaultView === "Week")
+            return ViewType.Week
+        else if(props.defaultView === "Month")
+            return ViewType.Month
+        else if(props.defaultView === "Year")
+            return ViewType.Year
+    }
 
     const schedulerDataRef = useRef(
-        new SchedulerData(dayjs().format(DATE_FORMAT), ViewType.Week)
+        new SchedulerData(dayjs().format(DATE_FORMAT), getDefaultView())
     );
     const schedulerData = schedulerDataRef.current;
 
+
+    schedulerData.config.views = getViews()
     schedulerData.setSchedulerLocale('en');
     schedulerData.setCalendarPopoverLocale('en');
-    schedulerData.config.schedulerWidth = '95%';
+    schedulerData.config.schedulerWidth = '100%';
+    schedulerData.config.displayWeekend = props.showWeekends;
+
+    function updateViewStartEnd(schedulerData: SchedulerData) {
+        let start = schedulerData.getViewStartDate();
+        let end = schedulerData.getViewEndDate();
+        props.viewStart?.setValue(start.toDate());
+        props.viewEnd?.setValue(end.toDate());
+    }
+
+    const updateSchedulerWidth = () => {
+        let schedulerItem = document.getElementById('RBS-Scheduler-root');
+        let rightMargin: string | number = 0;
+        if (schedulerItem) {
+            rightMargin = window.getComputedStyle(schedulerItem).marginRight;
+            rightMargin = parseInt(rightMargin.substring(0, rightMargin.length - 2));
+        }
+        schedulerData.documentWidth = schedulerData.documentWidth + (isNaN(rightMargin as number) ? 0 : (rightMargin as number));
+        setUpdateFlag(f => f + 1);
+    };
+
+    const updateWidth = () => {
+        if (plannerRef.current) {
+            setPlannerWidth(plannerRef.current.offsetWidth);
+        }
+    };
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (resizeTimeout.current) clearTimeout(resizeTimeout.current);
+            resizeTimeout.current = setTimeout(() => {
+                updateWidth();
+            }, 200);
+        };
+
+        updateWidth();
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (resizeTimeout.current) clearTimeout(resizeTimeout.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        // If already present and has width, update immediately
+        const el = document.getElementById('RBS-Scheduler-root');
+        if (el && el.offsetWidth > 0) {
+            updateWidth();
+            return;
+        }
+
+        // Otherwise, wait for it to appear and have width
+        waitForSchedulerWidth(updateWidth);
+    }, []);
+
+    useEffect(() => {
+        let animationFrame: number | null = null;
+        if (plannerWidth > 0) {
+            animationFrame = window.requestAnimationFrame(updateSchedulerWidth);
+        } else {
+            updateSchedulerWidth();
+        }
+
+        return () => {
+            if (animationFrame) window.cancelAnimationFrame(animationFrame);
+        };
+    }, [plannerWidth, schedulerData]);
 
     useEffect(() => {
         const newEventList: CustomEventItem[] = [];
@@ -114,23 +226,33 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
 
     const prevClick = () => {
         schedulerData.prev();
+        updateViewStartEnd(schedulerData)
+        props.eventData.reload();
         schedulerData.setEvents(events);
         setUpdateFlag(f => f + 1);
     };
 
     const nextClick = () => {
         schedulerData.next();
+        updateViewStartEnd(schedulerData)
+        props.eventData.reload();
         schedulerData.setEvents(events);
         setUpdateFlag(f => f + 1);
     };
 
     const onSelectDate = (_schedulerData: SchedulerData, date: string) => {
         schedulerData.setDate(date);
+        updateViewStartEnd(schedulerData)
+        props.eventData.reload();
+        schedulerData.setEvents(events);
         setUpdateFlag(f => f + 1);
     };
 
     const onViewChange = (_schedulerData: SchedulerData, view: View) => {
         schedulerData.setViewType(view.viewType);
+        updateSchedulerWidth();
+        updateViewStartEnd(schedulerData)
+        props.eventData.reload();
         setUpdateFlag(f => f + 1);
     };
 
@@ -155,14 +277,13 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
 
     schedulerData.setEvents(events);
     schedulerData.setResources(resources);
-    console.debug(`Update flag: ${updateFlag}`);
+    console.debug(`Update flag: ${updateFlag}, plannerWidth: ${plannerWidth}`);
 
     return (
-        <div className="react-planner">
+        <div className="react-planner" ref={plannerRef}>
             <DndProvider backend={HTML5Backend}>
                 <Scheduler
                     schedulerData={schedulerData}
-                    // parentRef={parentRef}
                     prevClick={prevClick}
                     nextClick={nextClick}
                     onSelectDate={onSelectDate}
