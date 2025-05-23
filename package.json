@@ -2,7 +2,7 @@
   "name": "reactplanner",
   "widgetName": "ReactPlanner",
   "version": "1.0.0",
-  "description": "Planner widget for React apps",
+  "description": "Scheduler/Planner widget for React apps",
   "copyright": "© Mendix Technology BV 2022. All rights reserved.",
   "author": "Kshitij Karandikar",
   "engines": {
