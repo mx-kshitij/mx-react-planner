@@ -8,6 +8,7 @@ import "./ui/ReactPlanner.css";
 import { ObjectItem, ValueStatus } from "mendix";
 import { ReactPlannerContainerProps } from "typings/ReactPlannerProps";
 
+//Default resource list
 const resourceList = [
     { id: 'r0', name: 'Resource0', groupOnly: true },
     { id: 'r1', name: 'Resource1' },
@@ -16,6 +17,7 @@ const resourceList = [
     { id: 'r4', name: 'Resource4', parentId: 'r2' },
 ];
 
+//Default event list
 const eventList = [
     {
         id: 1,
@@ -67,6 +69,10 @@ interface CustomEventItem extends EventItem {
 
 const defaultEventColor = "#ccc"
 
+/**
+ * Waits until the Scheduler DOM element exists and has a non-zero width, then calls the callback.
+ * Used to ensure measurements are only taken when the Scheduler is fully rendered and sized.
+ */
 function waitForSchedulerWidth(cb: () => void) {
     function check() {
         const el = document.getElementById('RBS-Scheduler-root');
@@ -79,12 +85,13 @@ function waitForSchedulerWidth(cb: () => void) {
     check();
 }
 
-
 export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
+    // Early return if viewStart or viewEnd are not available
     if (props && props.viewStart && props.viewEnd && props.viewStart.status !== ValueStatus.Available && props.viewEnd.status !== ValueStatus.Available) {
         return <div />;
     }
 
+    // State and refs for events, resources, update flag, planner width, and resize timeout
     const [events, setEvents] = useState<EventItem[]>(eventList);
     const [resources, setResources] = useState<Resource[]>(resourceList);
     const [updateFlag, setUpdateFlag] = useState(0);
@@ -92,6 +99,9 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
     const [plannerWidth, setPlannerWidth] = useState<number>(0);
     const resizeTimeout = useRef<NodeJS.Timeout | null>(null);
 
+    /**
+     * Returns the list of views to show in the scheduler based on props.
+     */
     function getViews(): any[] {
         const views = [];
         if (props.showDay)
@@ -105,6 +115,9 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         return views;
     }
 
+    /**
+     * Returns the default view type for the scheduler based on props.
+     */
     function getDefaultView(){
         if(props.defaultView === "Day")
             return ViewType.Day
@@ -116,18 +129,22 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
             return ViewType.Year
     }
 
+    // SchedulerData instance and configuration
     const schedulerDataRef = useRef(
         new SchedulerData(dayjs().format(DATE_FORMAT), getDefaultView())
     );
+
+    // Set initial configuration for the schedulerData instance
     const schedulerData = schedulerDataRef.current;
-
-
     schedulerData.config.views = getViews()
     schedulerData.setSchedulerLocale('en');
     schedulerData.setCalendarPopoverLocale('en');
     schedulerData.config.schedulerWidth = '100%';
     schedulerData.config.displayWeekend = props.showWeekends;
 
+    /**
+     * Updates the view start and end dates in the Mendix state.
+     */
     function updateViewStartEnd(schedulerData: SchedulerData) {
         let start = schedulerData.getViewStartDate();
         let end = schedulerData.getViewEndDate();
@@ -135,6 +152,10 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         props.viewEnd?.setValue(end.toDate());
     }
 
+    /**
+     * Updates the scheduler's documentWidth property and triggers a re-render.
+     * Also accounts for the right margin of the scheduler root element.
+     */
     const updateSchedulerWidth = () => {
         let schedulerItem = document.getElementById('RBS-Scheduler-root');
         let rightMargin: string | number = 0;
@@ -146,12 +167,16 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     };
 
+    /**
+     * Updates the plannerWidth state with the current width of the planner container.
+     */
     const updateWidth = () => {
         if (plannerRef.current) {
             setPlannerWidth(plannerRef.current.offsetWidth);
         }
     };
 
+    // Effect: Debounced window resize handler, updates width 200ms after resize stops
     useEffect(() => {
         const handleResize = () => {
             if (resizeTimeout.current) clearTimeout(resizeTimeout.current);
@@ -168,6 +193,7 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         };
     }, []);
 
+    // Effect: Wait for Scheduler DOM to be rendered and sized, then update width
     useEffect(() => {
         // If already present and has width, update immediately
         const el = document.getElementById('RBS-Scheduler-root');
@@ -180,6 +206,7 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         waitForSchedulerWidth(updateWidth);
     }, []);
 
+    // Effect: Update scheduler width when plannerWidth or schedulerData changes
     useEffect(() => {
         let animationFrame: number | null = null;
         if (plannerWidth > 0) {
@@ -193,6 +220,7 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         };
     }, [plannerWidth, schedulerData]);
 
+    // Effect: Update events from Mendix data when eventData changes
     useEffect(() => {
         const newEventList: CustomEventItem[] = [];
         props.eventData?.items?.forEach(item => {
@@ -210,6 +238,7 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setEvents(newEventList);
     }, [props.eventData]);
 
+    // Effect: Update resources from Mendix data when resourceData changes
     useEffect(() => {
         const newResourceList: Resource[] = [];
         props.resourceData?.items?.forEach(item => {
@@ -223,7 +252,10 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     }, [props.resourceData, schedulerData, props.resourceIdAttr, props.resourceNameAttr]);
 
-
+    /**
+     * Handler for clicking the "previous" button in the scheduler.
+     * Moves the view to the previous time period and updates events.
+     */
     const prevClick = () => {
         schedulerData.prev();
         updateViewStartEnd(schedulerData)
@@ -232,6 +264,10 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     };
 
+    /**
+     * Handler for clicking the "next" button in the scheduler.
+     * Moves the view to the next time period and updates events.
+     */
     const nextClick = () => {
         schedulerData.next();
         updateViewStartEnd(schedulerData)
@@ -240,6 +276,10 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     };
 
+    /**
+     * Handler for selecting a date in the scheduler.
+     * Updates the scheduler's date and reloads events.
+     */
     const onSelectDate = (_schedulerData: SchedulerData, date: string) => {
         schedulerData.setDate(date);
         updateViewStartEnd(schedulerData)
@@ -248,6 +288,10 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     };
 
+    /**
+     * Handler for changing the view type (Day, Week, Month, Year) in the scheduler.
+     * Updates the view and reloads events.
+     */
     const onViewChange = (_schedulerData: SchedulerData, view: View) => {
         schedulerData.setViewType(view.viewType);
         updateSchedulerWidth();
@@ -256,12 +300,20 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
         setUpdateFlag(f => f + 1);
     };
 
+    /**
+     * Handler for clicking an event item in the scheduler.
+     * Sets the selected event in Mendix and executes any selection action.
+     */
     const onItemClick = (item: ObjectItem) => {
         props.eventSelection.setSelection(item);
         if (props.onEventSelection)
             props.onEventSelection?.execute();
     }
 
+    /**
+     * Handler for creating a new event in the scheduler.
+     * Sets the new event's resource, start, and end in Mendix and executes any new event action.
+     */
     const onNewEvent = (resourceId: string, start: string, end: string) => {
         props.newEventResourceId.setValue(resourceId);
         props.newEventStart.setValue(new Date(start));
@@ -270,15 +322,18 @@ export function ReactPlanner(props: ReactPlannerContainerProps): ReactElement {
             props.newEventAction.execute()
     }
 
+    // Show loading state if event or resource data is not available
     if (!props.eventData || props.eventData.status !== ValueStatus.Available
         || !props.resourceData || props.resourceData.status !== ValueStatus.Available) {
         return <div />
     }
 
+    // Set events and resources on the schedulerData instance
     schedulerData.setEvents(events);
     schedulerData.setResources(resources);
     console.debug(`Update flag: ${updateFlag}, plannerWidth: ${plannerWidth}`);
 
+    // Render the planner and scheduler
     return (
         <div className="react-planner" ref={plannerRef}>
             <DndProvider backend={HTML5Backend}>
